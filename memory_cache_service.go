@@ -10,7 +10,7 @@ type MemoryCacheService struct {
 	mutex sync.Mutex
 }
 
-func ConstructMemoryCacheService() *MemoryCacheService {
+func New() CacheManager {
 	cache := make(map[string]CacheEntry)
 
 	service := MemoryCacheService{
