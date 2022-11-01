@@ -4,5 +4,5 @@ import "time"
 
 type CacheEntry struct {
 	Treshold time.Time
-	Value    interface{}
+	Value    any
 }
