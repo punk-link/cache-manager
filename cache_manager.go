@@ -2,8 +2,8 @@ package cacheManager
 
 import "time"
 
-type CacheManager interface {
+type CacheManager[T any] interface {
 	Remove(key string)
-	Set(key string, value any, interval time.Duration)
-	TryGet(key string) (any, bool)
+	Set(key string, value T, interval time.Duration)
+	TryGet(key string) (T, bool)
 }

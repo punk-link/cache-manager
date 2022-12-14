@@ -5,35 +5,35 @@ import (
 	"time"
 )
 
-type MemoryCacheService struct {
+type InnerMemoryCacheService struct {
 	cache map[string]CacheEntry
 	mutex sync.Mutex
 }
 
-func New() CacheManager {
-	cache := make(map[string]CacheEntry)
+func GetInnerCache() *InnerMemoryCacheService {
+	if _cache != nil {
+		return _cache
+	}
 
-	service := MemoryCacheService{
+	cache := make(map[string]CacheEntry)
+	service := InnerMemoryCacheService{
 		cache: cache,
 	}
 
 	go service.watch()
 
-	return &service
+	_cache = &service
+	return _cache
 }
 
-func (t *MemoryCacheService) Remove(key string) {
+func (t *InnerMemoryCacheService) Remove(key string) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
 	delete(t.cache, key)
 }
 
-func (t *MemoryCacheService) Set(key string, value any, interval time.Duration) {
-	if key == "" {
-		return
-	}
-
+func (t *InnerMemoryCacheService) Set(key string, value any, interval time.Duration) {
 	treshold := time.Now().UTC().Add(interval)
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -44,11 +44,7 @@ func (t *MemoryCacheService) Set(key string, value any, interval time.Duration) 
 	}
 }
 
-func (t *MemoryCacheService) TryGet(key string) (any, bool) {
-	if key == "" {
-		return nil, false
-	}
-
+func (t *InnerMemoryCacheService) TryGet(key string) (any, bool) {
 	if entry, isCached := t.cache[key]; isCached {
 		return entry.Value, true
 	}
@@ -56,7 +52,7 @@ func (t *MemoryCacheService) TryGet(key string) (any, bool) {
 	return nil, false
 }
 
-func (t *MemoryCacheService) watch() {
+func (t *InnerMemoryCacheService) watch() {
 	ticker := time.NewTicker(LIFETIME_VALIDATION_INTERVAL)
 	for range ticker.C {
 		for key, value := range t.cache {
@@ -66,5 +62,7 @@ func (t *MemoryCacheService) watch() {
 		}
 	}
 }
+
+var _cache *InnerMemoryCacheService
 
 const LIFETIME_VALIDATION_INTERVAL = 5 * time.Second
